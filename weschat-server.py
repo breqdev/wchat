@@ -1,5 +1,6 @@
 import socket, select
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server_sock.bind(("0.0.0.0", 8888))
 server_sock.listen(16)
 CONNECTIONS = [server_sock]
@@ -89,7 +90,8 @@ class Commander:
         self.COMMANDS = {
             "/uname":self.uname,
             "/join":self.join,
-            "/help":self.help
+            "/help":self.help,
+            "/room":self.room
             }
 
     def uname(self, data, addr, sock):
@@ -111,8 +113,16 @@ class Commander:
 /uname [username]: Change your username
 /join [room]: Join a chatroom
 /help: Display this help
+/room: Display the current room name
 '''
         sock.send(helpmessage.encode("UTF-8"))
+
+    def room(self, data, addr, sock):
+        room = lookupUser(addr)
+        if room is None:
+            room = "Error looking up room"
+        room = "You are in the room "+room.name+"\n"
+        sock.send(room.encode("UTF-8"))
 
     def command(self, data, addr, sock):
         for command in self.COMMANDS.keys():
@@ -148,9 +158,10 @@ try:
                             WAITING.remove(sock)
                             hall.admit(addr)
                             hall.recv("Client "+name(addr)+" connected")
-                            CONNECTIONS.append(sock) 
+                            CONNECTIONS.append(sock)
                         else:
                             print("Received "+data.decode()+" not "+HANDSHAKE)
+                            WAITING.remove(sock)
                         continue
                     if data:
                         data = data.decode()
