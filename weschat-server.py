@@ -57,8 +57,12 @@ def broadcast(sock, message):
             try:
                 s.send(message)
             except:
-                s.close()
-                CONNECTIONS.remove(s)
+                try: # Sometimes it can't be closed...
+                    s.close()
+                    CONNECTIONS.remove(s)
+                except:
+                    pass
+
 
 
 def name(addr):
@@ -160,7 +164,7 @@ try:
                             hall.recv("Client "+name(addr)+" connected")
                             CONNECTIONS.append(sock)
                         else:
-                            print("Received "+data.decode()+" not "+HANDSHAKE)
+                            #print("Received "+data.decode()+" not "+HANDSHAKE)
                             WAITING.remove(sock)
                         continue
                     if data:
@@ -169,7 +173,7 @@ try:
                             commander.command(data, addr, sock)
                         else:
                             msg = "<"+name(addr)+"> "+data
-                            print(msg)
+                            #print(msg)
                             userRoom = lookupUser(addr)
                             userRoom.recv(msg)
                             #print(hall.users)
@@ -179,13 +183,16 @@ try:
                 except Exception as e:
                     print(e)
                     print("Client "+name(addr)+" disconnected")
-                    sock.close()
-                    CONNECTIONS.remove(sock)
-                    hall.recv("<server> Client "+name(addr)+" disconnected")
-                    try:
-                        del UNAMES[addr]
-                    except KeyError:
-                        pass
-                    continue
+                    try: # sometimes closing/removing will fail
+                        sock.close()
+                        CONNECTIONS.remove(sock)
+                        hall.recv("<server> Client "+name(addr)+" disconnected")
+                        try:
+                            del UNAMES[addr]
+                        except KeyError:
+                            pass
+                        continue
+                    except:
+                        continue
 finally:
     server_sock.close()
