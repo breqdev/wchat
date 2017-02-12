@@ -1,8 +1,22 @@
 from weschat_api import WesChat
 import tkinter
+import json
+import os
 
 window = tkinter.Tk()
 window.title("WesChat")
+
+files = os.listdir("themes")
+
+print("Choose a theme")
+for i, file in enumerate(files):
+    print(i, file)
+num = int(input("Enter the theme number: "))
+
+with open("themes/"+files[num]) as file:
+    theme = json.loads(file.read())
+
+font = tuple(theme["font"])
 
 wc = None
 
@@ -16,18 +30,18 @@ def post(blah=None):
     postEntry.delete(0, tkinter.END)
 
 connectBtn = tkinter.Button(window, text="Connect", command=connect,
-                            font=("Courier New", 12))
+                            font=font)
 postBtn = tkinter.Button(window, text="Post", command=post,
-                         font=("Courier New", 12))
+                         font=font)
 
-hostLabel = tkinter.Label(window, text="Server IP:", font=("Courier New", 12))
-passLabel = tkinter.Label(window, text="Password:", font=("Courier New", 12))
+hostLabel = tkinter.Label(window, text="Server IP:", font=font)
+passLabel = tkinter.Label(window, text="Password:", font=font)
 
-hostEntry = tkinter.Entry(window, font=("Courier New", 12))
-passEntry = tkinter.Entry(window, font=("Courier New", 12), show="*")
-postEntry = tkinter.Entry(window, font=("Courier New", 12))
+hostEntry = tkinter.Entry(window, font=font)
+passEntry = tkinter.Entry(window, font=font, show="*")
+postEntry = tkinter.Entry(window, font=font)
 
-msgLabel = tkinter.Text(window, font=("Courier New", 12), wrap=tkinter.WORD)
+msgLabel = tkinter.Text(window, font=font, wrap=tkinter.WORD)
 
 connectBtn.grid(row=0, column=2, sticky=tkinter.E+tkinter.N)
 postBtn.grid(row=3, column=2, sticky=tkinter.E, rowspan=2)
